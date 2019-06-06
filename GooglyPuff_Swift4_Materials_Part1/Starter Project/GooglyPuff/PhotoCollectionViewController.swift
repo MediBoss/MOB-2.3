@@ -108,7 +108,7 @@ private extension PhotoCollectionViewController {
             self.navigationItem.prompt = "Add photos with faces to Googlyify them!"
         }
         
-        // 3 - display message in nav bar after delay
+        // 3 - display message in nav bar after delay2
         self.navigationController?.viewIfLoaded?.setNeedsLayout()
     }
 
