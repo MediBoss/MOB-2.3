@@ -65,6 +65,7 @@ final class PhotoManager {
     }
   
     func addPhoto(_ photo: Photo) {
+        
         concurentPhotoQueue.async(flags: .barrier) { [weak self] in
             // 1 - The write operation is dispatched asynchroneously with a barrier. When this executes, it'll be the only one in the the queue.
             guard let self = self else {
@@ -82,28 +83,59 @@ final class PhotoManager {
     }
 
     func downloadPhotos(withCompletion completion: BatchPhotoDownloadingCompletionClosure?) {
-        
+
         var storedError: NSError?
         let downloadGroup = DispatchGroup()
-        let addresses = [PhotoURLString.overlyAttachedGirlfriend,
+        var addresses = [PhotoURLString.overlyAttachedGirlfriend,
                          PhotoURLString.successKid,
                          PhotoURLString.lotsOfFaces]
-        let _ = DispatchQueue.global(qos: .userInitiated)
-        DispatchQueue.concurrentPerform(iterations: addresses.count) { index in
-            let address = addresses[index]
-            let url = URL(string: address)
+        
+        // 1
+        addresses += addresses + addresses
+        
+        // 2
+        var blocks: [DispatchWorkItem] = []
+        
+        for index in 0..<addresses.count {
             downloadGroup.enter()
-            let photo = DownloadPhoto(url: url!) { _, error in
-                if error != nil {
-                    storedError = error
+            
+            // 3
+            let block = DispatchWorkItem(flags: .inheritQoS) {
+                let address = addresses[index]
+                let url = URL(string: address)
+                let photo = DownloadPhoto(url: url!) { _, error in
+                    if error != nil {
+                        storedError = error
+                    }
+                    downloadGroup.leave()
                 }
+                PhotoManager.shared.addPhoto(photo)
+            }
+            blocks.append(block)
+            
+            // 4
+            DispatchQueue.main.async(execute: block)
+        }
+        
+        // 5
+        for block in blocks[3..<blocks.count] {
+            
+            // 6
+            let cancel = Bool.random()
+            if cancel {
+                
+                // 7
+                block.cancel()
+                
+                // 8
                 downloadGroup.leave()
             }
-            PhotoManager.shared.addPhoto(photo)
         }
+        
         downloadGroup.notify(queue: DispatchQueue.main) {
             completion?(storedError)
         }
+
 
 
   }
