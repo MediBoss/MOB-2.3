@@ -53,7 +53,15 @@ final class PhotoManager {
     private var unsafePhotos: [Photo] = []
   
     var photos: [Photo] {
-        return unsafePhotos
+        var photosCopy: [Photo]!
+        
+        // 1 - perform the read synchroneously in the custom queue
+        concurentPhotoQueue.sync {
+            // 2 - stores a copy of the photo array
+            photosCopy = self.unsafePhotos
+        }
+        
+        return photosCopy
     }
   
     func addPhoto(_ photo: Photo) {
