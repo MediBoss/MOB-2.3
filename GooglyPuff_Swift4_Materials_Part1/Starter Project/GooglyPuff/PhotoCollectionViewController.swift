@@ -91,6 +91,27 @@ final class PhotoCollectionViewController: UICollectionViewController {
 private extension PhotoCollectionViewController {
   func showOrHideNavPrompt() {
     // Implement me!
+    
+    // 1 - Amount of time to delay the task by. Also known as Throtling
+    let delayInSeconds = 2.0
+    
+    // 2 - Wait for 2.0 seconds then asynchronously run the block of code
+
+    DispatchQueue.main.asyncAfter(deadline: .now() + delayInSeconds) { [weak self] in
+        guard let self = self else {
+            return
+        }
+        
+        if PhotoManager.shared.photos.count > 0 {
+            self.navigationItem.prompt = nil
+        } else {
+            self.navigationItem.prompt = "Add photos with faces to Googlyify them!"
+        }
+        
+        // 3 - display message in nav bar after delay
+        self.navigationController?.viewIfLoaded?.setNeedsLayout()
+    }
+
   }
   
   func downloadImageAssets() {
