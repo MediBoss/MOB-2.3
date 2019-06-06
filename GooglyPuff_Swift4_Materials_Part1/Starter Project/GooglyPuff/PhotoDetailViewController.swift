@@ -51,8 +51,18 @@ final class PhotoDetailViewController: UIViewController {
       photoImageView.contentMode = .center
     }
     
-    let overlayImage = faceOverlayImageFrom(image)
-    fadeInNewImage(overlayImage)
+    // 1 - Move this task to a bacjground global queue and run the each line of code in the closure asynchrosneously
+    DispatchQueue.global(qos: .userInitiated).async { [ weak self] in // use weak self to capture a weak reference of self
+        guard let self = self else { return }
+        let overlayImage = self.faceOverlayImageFrom(self.image)
+        
+        // 2 - When the face detection is completed and generated an image, we must bring it back to main thread for UI display
+        DispatchQueue.main.async { [ weak self ] in
+            
+            // 3 - Update the UI in the main queue
+            self?.fadeInNewImage(overlayImage)
+        }
+    }
   }
 
 }
