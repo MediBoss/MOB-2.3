@@ -82,20 +82,39 @@ final class PhotoManager {
     }
 
     func downloadPhotos(withCompletion completion: BatchPhotoDownloadingCompletionClosure?) {
-        var storedError: NSError?
-        for address in [PhotoURLString.overlyAttachedGirlfriend,
-                        PhotoURLString.successKid,
-                        PhotoURLString.lotsOfFaces] {
-                            let url = URL(string: address)
-                            let photo = DownloadPhoto(url: url!) { _, error in
-                                if error != nil {
-                                    storedError = error
+        // 1 - place this entire method in background queue with async to not block the main thread
+        DispatchQueue.global(qos: .userInitiated).async {
+            var storedError: NSError?
+            
+            // 2 - creates a new dispatch group object
+            let downloadGroup = DispatchGroup()
+            for address in [PhotoURLString.overlyAttachedGirlfriend,
+                            PhotoURLString.successKid,
+                            PhotoURLString.lotsOfFaces] {
+                                let url = URL(string: address)
+                                
+                                // 3 - manaually notify the group that a task has started. Must balance the number of enter() with leave
+                                downloadGroup.enter()
+                                let photo = DownloadPhoto(url: url!) { _, error in
+                                    if error != nil {
+                                        storedError = error
+                                    }
+                                    
+                                    // 4 -  Notify the group that this work is done
+                                    downloadGroup.leave()
                                 }
-                            }
-                            PhotoManager.shared.addPhoto(photo)
+                                PhotoManager.shared.addPhoto(photo)
+            }
+            
+            // 5 - This blcoks the current thread while waiting for all tasks' compleion
+            downloadGroup.wait()
+            
+            // 6
+            DispatchQueue.main.async {
+                completion?(storedError)
+            }
         }
-    
-        completion?(storedError)
+
   }
   
     private func postContentAddedNotification() {
