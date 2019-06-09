@@ -90,16 +90,16 @@ final class PhotoManager {
                          PhotoURLString.successKid,
                          PhotoURLString.lotsOfFaces]
         
-        // 1
+        // 1 -
         addresses += addresses + addresses
         
-        // 2
+        // 2 - this block of item will hold dispatch block objects for later use
         var blocks: [DispatchWorkItem] = []
         
         for index in 0..<addresses.count {
             downloadGroup.enter()
             
-            // 3
+            // 3 - creates a new Dispatch work item with a flag to tell the block to inherit the QOS the queue
             let block = DispatchWorkItem(flags: .inheritQoS) {
                 let address = addresses[index]
                 let url = URL(string: address)
@@ -111,23 +111,23 @@ final class PhotoManager {
                 }
                 PhotoManager.shared.addPhoto(photo)
             }
-            blocks.append(block)
+            blocks.append(block) // Adds the new block(image) that just completed
             
-            // 4
+            // 4 - Dispatch the block aynchroneously to he main queue
             DispatchQueue.main.async(execute: block)
         }
         
-        // 5
+        // 5 - skips the first three downloads
         for block in blocks[3..<blocks.count] {
             
-            // 6
+            // 6 - Randomly picks between true and false
             let cancel = Bool.random()
             if cancel {
                 
-                // 7
+                // 7 - cancel the block if the block is still in the queue
                 block.cancel()
                 
-                // 8
+                // 8 - removes the canceled block from the group
                 downloadGroup.leave()
             }
         }
