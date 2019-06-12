@@ -30,19 +30,7 @@ class TableViewController: UITableViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        // Step 1 -  Read and load data from Plist on global queue with a user interactive priority
-        
-        DispatchQueue.global(qos: .userInteractive).async {
-            
-            guard let plist = Bundle.main.url(forResource: "PhotosDictionary", withExtension: "plist"),
-                let contents = try? Data(contentsOf: plist),
-                let serializedPlist = try? PropertyListSerialization.propertyList(from: contents, format: nil),
-                let serialUrls = serializedPlist as? [String: String] else {
-                    print("error with serializedPlist")
-                    return
-            }
-            self.photosDict = serialUrls
-        }
+        loadImagesFromPlist()
     }
     
     override func tableView(_ tableView: UITableView?, numberOfRowsInSection section: Int) -> Int {
@@ -68,7 +56,7 @@ class TableViewController: UITableViewController {
             image = self.applySepiaFilter(unfilteredImage!)
             
             // Step 3 -  Update UI on Main Thread
-            DispatchQueue. main.async {
+            DispatchQueue.main.async {
                 // Configure the cell...
                 cell.textLabel?.text = rowKey
                 if image != nil {
@@ -78,6 +66,21 @@ class TableViewController: UITableViewController {
             
         }
         return cell
+    }
+    
+    func loadImagesFromPlist(){
+        
+        DispatchQueue.global(qos: .userInteractive).async {
+            
+            guard let plist = Bundle.main.url(forResource: "PhotosDictionary", withExtension: "plist"),
+                let contents = try? Data(contentsOf: plist),
+                let serializedPlist = try? PropertyListSerialization.propertyList(from: contents, format: nil),
+                let serialUrls = serializedPlist as? [String: String] else {
+                    print("error with serializedPlist")
+                    return
+            }
+            self.photosDict = serialUrls
+        }
     }
     
     // MARK: - image processing
