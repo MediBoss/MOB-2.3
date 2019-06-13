@@ -12,7 +12,7 @@ class ViewController: UIViewController {
     
     let numberOfCells = 20_000
     
-    let imageURLArray = Unsplash.defaultImageURLs
+    let imageURLArray8 = Unsplash.defaultImageURLs
     
     // MARK: - VC Lifecycle
     

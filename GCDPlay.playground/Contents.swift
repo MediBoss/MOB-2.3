@@ -86,18 +86,20 @@ import Foundation
 func downloadMovies(numberOfMovies: Int) {
 
     // Create a semaphore
-    let sm = DispatchSemaphore(value: 1)
+    let sm = DispatchSemaphore(value: numberOfMovies)
     // Launch 8 tasks
     
-    DispatchQueue.global(qos: .background).async {
-        for i in 1...8{
+    print("Starting downloading \(numberOfMovies) movies at time...")
+    
+    for i in 1...8{
+        
+        DispatchQueue.global().async {
             sm.wait()
             sleep(2)
             print("Task \(i) is done")
             sm.signal()
         }
-        print("Completed all tasks")
     }
 }
 
-downloadMovies(numberOfMovies:2)
+downloadMovies(numberOfMovies: 2)

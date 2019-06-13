@@ -17,7 +17,6 @@
  5.
  6. Because the images are being loaded serially
  7. Scrolling is slow because everytime we scroll, the cell is being reused, hence calling the cellForRowAt which is perfoming heaving computation on the main thread
-
  **/
 
 import UIKit
@@ -63,7 +62,6 @@ class TableViewController: UITableViewController {
                     cell.imageView?.image = image!
                 }
             }
-            
         }
         return cell
     }
