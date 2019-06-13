@@ -42,21 +42,33 @@ PlaygroundPage.current.needsIndefiniteExecution = true
  ...
  100
  */
+            // 1 - Semaphore for Priority Tasks
 
 // Define two queues with different prioritie
 let highPriorityQueue = DispatchQueue.global(qos: .userInitiated)
 let lowerPriorityQueue = DispatchQueue.global(qos: .utility)
-let 
+
+// Define semaphore to keep track of threads to print at a time
+let semaphore = DispatchSemaphore(value: 1)
 
 
 func asynxPrint(queue: DispatchQueue, symbole: String) {
     
     queue.async {
+        
+        print("\(symbole) waiting...")
+        semaphore.wait()
+        
         for i in 0...10 {
             print(symbole, i)
         }
+        
+        print("\(symbole) done...")
+        semaphore.signal()
     }
 }
+
+        // 2 - Semaphores for Deadlocks
 
 asynxPrint(queue: highPriorityQueue, symbole: "👚")
 asynxPrint(queue: lowerPriorityQueue, symbole: "👕")
