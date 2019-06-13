@@ -19,7 +19,7 @@
   operationQueue.addOperation(printerOperation) // 5) add operation to queue
 
   
-         TESTING OPERATION BLOCK ORDER OF EXECUTION
+         // TESTING OPERATION BLOCK ORDER OF EXECUTION
 
   let complexOperation = BlockOperation()
   let complexOperationQueue = OperationQueue()
