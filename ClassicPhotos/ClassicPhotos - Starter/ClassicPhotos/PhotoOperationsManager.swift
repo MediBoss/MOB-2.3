@@ -38,8 +38,8 @@ enum PhotoRecordState {
     case failed
 }
 
-// This class defines a single record of a Photo displayed in the app
-class PhtotRecord {
+/// This class defines a single record of a Photo displayed in the app
+class PhotoRecord {
     
     let name: String
     let url: URL
@@ -53,11 +53,13 @@ class PhtotRecord {
     }
 }
 
+// This class define characteristic of a task that is pending to be executed
 class PendingOperations {
     
     lazy var donwloadsInProgress: [IndexPath: Operation] = [:] // container of photos that are downloading
     lazy var filterationsInProgress: [IndexPath: Operation] = [:] // container of photos that are being filtered
     
+    // Operation queue to manage all download-related operations
     lazy var downloadQueue: OperationQueue = {
         
         var queue = OperationQueue()
@@ -68,4 +70,109 @@ class PendingOperations {
         return queue
     }()
     
+    // Operation queue to manage all filter-related operations
+    lazy var filterationQueue: OperationQueue = {
+       
+        let queue = OperationQueue()
+        
+        queue.name = "Filter Queue"
+        queue.maxConcurrentOperationCount = 1
+        
+        return queue
+    }()
+}
+
+// This class Subclasses the Operation class for custom behaviors of downloading an image
+class ImageDownloader: Operation {
+    
+    //1 - Adds reference of the PhotoRecord object related to the operation
+    let photoRecord: PhotoRecord
+    
+    //2 - Designated initializer
+    init(_ photoRecord: PhotoRecord) {
+        self.photoRecord = photoRecord
+    }
+    
+    //3 - Override the main function of the Operation class
+    override func main() {
+        //4 - Checks if the operation is already canceled before starting
+        if isCancelled {
+            return
+        }
+        
+        //5 - Downloads the image data
+        guard let imageData = try? Data(contentsOf: photoRecord.url) else { return }
+        
+        //6 - Check if again if cancelled after downloadind data
+        if isCancelled {
+            return
+        }
+        
+        if !imageData.isEmpty {
+            
+            //7 - If there is data, download the image and set the state to downloaded
+            photoRecord.image = UIImage(data:imageData)
+            photoRecord.state = .downloaded
+        } else {
+            
+            // 8 - If there is no data, set the state to failed and set the image to a failed default thumbnail
+            photoRecord.state = .failed
+            photoRecord.image = UIImage(named: "Failed")
+        }
+    }
+}
+
+// This class Subclasses the Operation class for custom behaviors of filtering an image
+class ImageFiltration: Operation {
+    let photoRecord: PhotoRecord
+    
+    init(_ photoRecord: PhotoRecord) {
+        self.photoRecord = photoRecord
+    }
+    
+    override func main () {
+        if isCancelled {
+            return
+        }
+        
+        guard self.photoRecord.state == .downloaded else {
+            return
+        }
+        
+        if let image = photoRecord.image,
+            let filteredImage = applySepiaFilter(image) {
+            photoRecord.image = filteredImage
+            photoRecord.state = .filtered
+        }
+    }
+    
+    
+    func applySepiaFilter(_ image: UIImage) -> UIImage? {
+        guard let data = UIImagePNGRepresentation(image) else { return nil }
+        let inputImage = CIImage(data: data)
+        
+        if isCancelled {
+            return nil
+        }
+        
+        let context = CIContext(options: nil)
+        
+        guard let filter = CIFilter(name: "CISepiaTone") else { return nil }
+        filter.setValue(inputImage, forKey: kCIInputImageKey)
+        filter.setValue(0.8, forKey: "inputIntensity")
+        
+        if isCancelled {
+            return nil
+        }
+        
+        guard
+            let outputImage = filter.outputImage,
+            let outImage = context.createCGImage(outputImage, from: outputImage.extent)
+            else {
+                return nil
+        }
+        
+        return UIImage(cgImage: outImage)
+    }
+
 }
