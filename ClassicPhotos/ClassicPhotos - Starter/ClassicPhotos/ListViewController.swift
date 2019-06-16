@@ -32,11 +32,15 @@ import CoreImage
 let dataSourceURL = URL(string:"http://www.raywenderlich.com/downloads/ClassicPhotosDictionary.plist")!
 
 class ListViewController: UITableViewController {
-  lazy var photos = NSDictionary(contentsOf: dataSourceURL)!
+    
+    var photos: [PhotoRecord] = []
+    var pendingOperations = PendingOperations()
   
   override func viewDidLoad() {
     super.viewDidLoad()
     self.title = "Classic Photos"
+    
+    fetchPhotoDetails()
   }
   
   // MARK: - Table view data source
@@ -45,30 +49,99 @@ class ListViewController: UITableViewController {
     return photos.count
   }
   
-  override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-    let cell = tableView.dequeueReusableCell(withIdentifier: "CellIdentifier", for: indexPath) 
-    let rowKey = photos.allKeys[indexPath.row] as! String
-    
-    var image : UIImage?
-
-    guard let imageURL = URL(string:photos[rowKey] as! String),
-      let imageData = try? Data(contentsOf: imageURL) else {
+    override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        let cell = tableView.dequeueReusableCell(withIdentifier: "CellIdentifier", for: indexPath)
+        
+        //1
+        if cell.accessoryView == nil {
+            let indicator = UIActivityIndicatorView(activityIndicatorStyle: .gray)
+            cell.accessoryView = indicator
+        }
+        let indicator = cell.accessoryView as! UIActivityIndicatorView
+        
+        //2
+        let photoDetails = photos[indexPath.row]
+        
+        //3
+        cell.textLabel?.text = photoDetails.name
+        cell.imageView?.image = photoDetails.image
+        
+        //4
+        switch (photoDetails.state) {
+        case .filtered:
+            indicator.stopAnimating()
+        case .failed:
+            indicator.stopAnimating()
+            cell.textLabel?.text = "Failed to load"
+        case .new, .ready:
+            indicator.startAnimating()
+            startOperations(for: photoDetails, at: indexPath)
+        }
+        
         return cell
     }
+    
+    func startOperations(for photoRecord: PhotoRecord, at indexPath: IndexPath) {
+        switch (photoRecord.state) {
+        case .new:
+            startDownload(for: photoRecord, at: indexPath)
+        case .ready:
+            startFiltration(for: photoRecord, at: indexPath)
+        default:
+            NSLog("do nothing")
+        }
+    }
 
-    //1
-    let unfilteredImage = UIImage(data:imageData)
-    //2
-    image = self.applySepiaFilter(unfilteredImage!)
-
-    // Configure the cell...
-    cell.textLabel?.text = rowKey
-    if image != nil {
-      cell.imageView?.image = image!
+    
+    func startDownload(for photoRecord: PhotoRecord, at indexPath: IndexPath) {
+        //1 - Check check if there is already a particular operation at the goven index, if so, ignore the request
+        guard pendingOperations.donwloadsInProgress[indexPath] == nil else {
+            return
+        }
+        
+        //2 - Create an unstance of the ImageDownloader class
+        let downloader = ImageDownloader(photoRecord)
+        
+        //3 - Add completion block that executes when the operatio is completed
+        downloader.completionBlock = {
+            if downloader.isCancelled {
+                return
+            }
+            
+            DispatchQueue.main.async {
+                self.pendingOperations.donwloadsInProgress.removeValue(forKey: indexPath)
+                self.tableView.reloadRows(at: [indexPath], with: .fade)
+            }
+        }
+        
+        //4 - add the current operation in the list of donwload in progress to keep track
+        pendingOperations.donwloadsInProgress[indexPath] = downloader
+        
+        //5 - Add the operation to the download queue. This actually triggers the start() method
+        pendingOperations.downloadQueue.addOperation(downloader)
     }
     
-    return cell
-  }
+    func startFiltration(for photoRecord: PhotoRecord, at indexPath: IndexPath) {
+        guard pendingOperations.filterationsInProgress[indexPath] == nil else {
+            return
+        }
+        
+        let filterer = ImageFiltration(photoRecord)
+        filterer.completionBlock = {
+            if filterer.isCancelled {
+                return
+            }
+            
+            DispatchQueue.main.async {
+                self.pendingOperations.filterationsInProgress.removeValue(forKey: indexPath)
+                self.tableView.reloadRows(at: [indexPath], with: .fade)
+            }
+        }
+        
+        pendingOperations.filterationsInProgress[indexPath] = filterer
+        pendingOperations.filterationQueue.addOperation(filterer)
+    }
+
   
   // MARK: - image processing
 
@@ -85,4 +158,59 @@ class ListViewController: UITableViewController {
     }
     return UIImage(cgImage: outImage)
   }
+    
+    
+    
+    func fetchPhotoDetails() {
+        let request = URLRequest(url: dataSourceURL)
+        UIApplication.shared.isNetworkActivityIndicatorVisible = true
+        
+        let task = URLSession(configuration: .default).dataTask(with: request) { data, response, error in
+            
+            let alertController = UIAlertController(title: "Oops!",
+                                                    message: "There was an error fetching photo details.",
+                                                    preferredStyle: .alert)
+            let okAction = UIAlertAction(title: "OK", style: .default)
+            alertController.addAction(okAction)
+            
+            if let data = data {
+                do {
+            
+                    let datasourceDictionary =
+                        try PropertyListSerialization.propertyList(from: data,
+                                                                   options: [],
+                                                                   format: nil) as! [String: String]
+
+                    for (name, value) in datasourceDictionary {
+                        let url = URL(string: value)
+                        if let url = url {
+                            let photoRecord = PhotoRecord(name: name, url: url)
+                            self.photos.append(photoRecord)
+                        }
+                    }
+                    
+                    DispatchQueue.main.async {
+                        UIApplication.shared.isNetworkActivityIndicatorVisible = false
+                        self.tableView.reloadData()
+                    }
+                } catch {
+                    DispatchQueue.main.async {
+                        self.present(alertController, animated: true, completion: nil)
+                    }
+                }
+            }
+            
+            // 6
+            if error != nil {
+                DispatchQueue.main.async {
+                    UIApplication.shared.isNetworkActivityIndicatorVisible = false
+                    self.present(alertController, animated: true, completion: nil)
+                }
+            }
+        }
+        // 7
+        task.resume()
+    }
+
 }
+

@@ -33,7 +33,7 @@ import UIKit
 enum PhotoRecordState {
     
     case new
-    case downloaded
+    case ready
     case filtered
     case failed
 }
@@ -53,7 +53,7 @@ class PhotoRecord {
     }
 }
 
-// This class define characteristic of a task that is pending to be executed
+/// This class tracks and manages downloading and filtering operations that are pending or executing
 class PendingOperations {
     
     lazy var donwloadsInProgress: [IndexPath: Operation] = [:] // container of photos that are downloading
@@ -112,7 +112,7 @@ class ImageDownloader: Operation {
             
             //7 - If there is data, download the image and set the state to downloaded
             photoRecord.image = UIImage(data:imageData)
-            photoRecord.state = .downloaded
+            photoRecord.state = .ready
         } else {
             
             // 8 - If there is no data, set the state to failed and set the image to a failed default thumbnail
@@ -124,6 +124,7 @@ class ImageDownloader: Operation {
 
 // This class Subclasses the Operation class for custom behaviors of filtering an image
 class ImageFiltration: Operation {
+    
     let photoRecord: PhotoRecord
     
     init(_ photoRecord: PhotoRecord) {
@@ -135,7 +136,7 @@ class ImageFiltration: Operation {
             return
         }
         
-        guard self.photoRecord.state == .downloaded else {
+        guard self.photoRecord.state == .ready else {
             return
         }
         

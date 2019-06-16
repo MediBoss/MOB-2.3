@@ -13,6 +13,7 @@
 		27DF647B19657AD900B42725 /* Storyboard.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 27DF647A19657AD900B42725 /* Storyboard.storyboard */; };
 		27DF647D19657B7500B42725 /* ListViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 27DF647C19657B7500B42725 /* ListViewController.swift */; };
 		B846A35122B6BECB0074D5ED /* PhotoOperationsManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B846A35022B6BECB0074D5ED /* PhotoOperationsManager.swift */; };
+		B846A35322B6C5800074D5ED /* NetworkManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B846A35222B6C5800074D5ED /* NetworkManager.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -24,6 +25,7 @@
 		27DF647A19657AD900B42725 /* Storyboard.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = Storyboard.storyboard; sourceTree = "<group>"; };
 		27DF647C19657B7500B42725 /* ListViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ListViewController.swift; sourceTree = "<group>"; };
 		B846A35022B6BECB0074D5ED /* PhotoOperationsManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoOperationsManager.swift; sourceTree = "<group>"; };
+		B846A35222B6C5800074D5ED /* NetworkManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkManager.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -63,6 +65,7 @@
 				27DF647A19657AD900B42725 /* Storyboard.storyboard */,
 				27DF647C19657B7500B42725 /* ListViewController.swift */,
 				B846A35022B6BECB0074D5ED /* PhotoOperationsManager.swift */,
+				B846A35222B6C5800074D5ED /* NetworkManager.swift */,
 			);
 			path = ClassicPhotos;
 			sourceTree = "<group>";
@@ -146,6 +149,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B846A35322B6C5800074D5ED /* NetworkManager.swift in Sources */,
 				B846A35122B6BECB0074D5ED /* PhotoOperationsManager.swift in Sources */,
 				27DF647D19657B7500B42725 /* ListViewController.swift in Sources */,
 				27DF646319657A9300B42725 /* AppDelegate.swift in Sources */,
