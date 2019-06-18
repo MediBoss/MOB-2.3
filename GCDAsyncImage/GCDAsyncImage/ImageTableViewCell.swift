@@ -17,4 +17,5 @@ class ImageTableViewCell: UITableViewCell {
         
         pictureImageView.image = nil
     }
+    
 }

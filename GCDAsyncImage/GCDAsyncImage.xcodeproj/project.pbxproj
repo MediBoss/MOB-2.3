@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		B88B735A22B983AC00047EE3 /* OperationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B88B735922B983AC00047EE3 /* OperationManager.swift */; };
+		B88B735D22B988C900047EE3 /* Photo.swift in Sources */ = {isa = PBXBuildFile; fileRef = B88B735C22B988C900047EE3 /* Photo.swift */; };
 		CA5EAEB31E6011DE00B25492 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA5EAEB21E6011DE00B25492 /* AppDelegate.swift */; };
 		CA5EAEB51E6011DE00B25492 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA5EAEB41E6011DE00B25492 /* ViewController.swift */; };
 		CA5EAEB81E6011DE00B25492 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = CA5EAEB61E6011DE00B25492 /* Main.storyboard */; };
@@ -18,6 +20,8 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		B88B735922B983AC00047EE3 /* OperationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OperationManager.swift; sourceTree = "<group>"; };
+		B88B735C22B988C900047EE3 /* Photo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Photo.swift; sourceTree = "<group>"; };
 		CA5EAEAF1E6011DE00B25492 /* GCDAsyncImage.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = GCDAsyncImage.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		CA5EAEB21E6011DE00B25492 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		CA5EAEB41E6011DE00B25492 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
@@ -62,6 +66,8 @@
 			children = (
 				CA5EAEB41E6011DE00B25492 /* ViewController.swift */,
 				CA5EAEC41E60152400B25492 /* ImageTableViewCell.swift */,
+				B88B735C22B988C900047EE3 /* Photo.swift */,
+				B88B735922B983AC00047EE3 /* OperationManager.swift */,
 				CA5EAECA1E6025FE00B25492 /* Supporting Files */,
 			);
 			path = GCDAsyncImage;
@@ -155,11 +161,13 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B88B735D22B988C900047EE3 /* Photo.swift in Sources */,
 				CA5EAEC91E6023DC00B25492 /* ViewController+Misc.swift in Sources */,
 				CA5EAEC51E60152400B25492 /* ImageTableViewCell.swift in Sources */,
 				CA5EAEB51E6011DE00B25492 /* ViewController.swift in Sources */,
 				CA5EAEB31E6011DE00B25492 /* AppDelegate.swift in Sources */,
 				CA5EAEC71E60227E00B25492 /* Unsplash.swift in Sources */,
+				B88B735A22B983AC00047EE3 /* OperationManager.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

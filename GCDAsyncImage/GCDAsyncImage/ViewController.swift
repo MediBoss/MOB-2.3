@@ -10,7 +10,10 @@ import UIKit
 
 class ViewController: UIViewController {
     
+    @IBOutlet weak var tableview: UITableView!
     let numberOfCells = 20_000
+    var photos: [Photo] = []
+    var pendingOperations = PendingOperations()
     
     let imageURLArray8 = Unsplash.defaultImageURLs
     
@@ -18,6 +21,7 @@ class ViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        fetchPhotos()
     }
 }
 
@@ -25,26 +29,97 @@ class ViewController: UIViewController {
 
 extension ViewController: UITableViewDataSource {
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return numberOfCells
+        return photos.count
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "ImageCell", for: indexPath) as! ImageTableViewCell
         
-        let url = imageURLArray[indexPath.row % imageURLArray.count]
-        let data = try? Data(contentsOf: url)
-        let image = UIImage(data: data!)
+        let photo = photos[indexPath.row]
         
-        // TODO: add sepia filter to image
-//        let inputImage = CIImage(data: UIImagePNGRepresentation(image!)!)
-//        let filter = CIFilter(name: "CISepiaTone")!
-//        filter.setValue(inputImage, forKey: kCIInputImageKey)
-//        filter.setValue(0.8, forKey: kCIInputIntensityKey)
-//        let outputCIImage = filter.outputImage
-//        let imageWithFilter = UIImage(ciImage: outputCIImage!)
+        cell.imageView?.image = photo.image
         
-        cell.pictureImageView.image = image
+        switch (photo.state) {
+        case .filtered:
+            break
+            
+        case .failed:
+            print("failed")
         
+        case .new, .ready:
+            startOperations(for: photo, at: indexPath)
+
+        }
+
         return cell
     }
+    
+    func startOperations(for photoRecord: Photo, at indexPath: IndexPath) {
+        switch (photoRecord.state) {
+        case .new:
+            startDownload(for: photoRecord, at: indexPath)
+        case .ready:
+            fallthrough
+            //startFiltration(for: photoRecord, at: indexPath)
+        default:
+            NSLog("do nothing")
+        }
+    }
+    
+    func startDownload(for photo: Photo, at indexPath: IndexPath) {
+        
+        guard pendingOperations.donwloadsInProgress[indexPath] == nil else {
+            return
+        }
+        
+        let downloader = PhotoDownloadOperation(photo)
+        downloader.completionBlock = {
+            if downloader.isCancelled {
+                return
+            }
+            
+            DispatchQueue.main.async {
+                self.tableview.reloadRows(at: [indexPath], with: .fade)
+            }
+        }
+        
+        //5 - Add the operation to the download queue. This actually triggers the start() method
+        pendingOperations.downloadQueue.addOperation(downloader)
+    }
+    
+    func startFiltration(for photo: Photo, at indexPath: IndexPath) {
+        
+        guard pendingOperations.filterationsInProgress[indexPath] == nil else {
+            return
+        }
+        
+        let filterer = PhotoFilterOperation(photo)
+        filterer.completionBlock = {
+            if filterer.isCancelled {
+                return
+            }
+            
+            DispatchQueue.main.async {
+                self.pendingOperations.filterationsInProgress.removeValue(forKey: indexPath)
+                self.tableview.reloadRows(at: [indexPath], with: .fade)
+            }
+        }
+        
+        pendingOperations.filterationsInProgress[indexPath] = filterer
+        pendingOperations.filterationQueue.addOperation(filterer)
+    }
+    
+    func fetchPhotos() {
+        
+        imageURLArray8.forEach { (url) in
+            
+            let photo = Photo(url: url)
+            self.photos.append(photo)
+        }
+        
+        DispatchQueue.main.async {
+            self.tableview.reloadData()
+        }
+    }
 }
+

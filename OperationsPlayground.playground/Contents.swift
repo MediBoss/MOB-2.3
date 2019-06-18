@@ -21,35 +21,61 @@
 //
          // TESTING OPERATION BLOCK ORDER OF EXECUTION
 
-  let complexOperation = BlockOperation()
-  let complexOperationQueue = OperationQueue()
+//  let complexOperation = BlockOperation()
+//  let complexOperationQueue = OperationQueue()
+//
+//  complexOperationQueue.maxConcurrentOperationCount = 2 // Num of ops to run concurently
+//
+//
+//  // First block
+//  complexOperation.addExecutionBlock {
+//    for i in 1...100{
+//        // do some heavy shit
+//    }
+//    print("block 1 done")
+//  }
+//
+//  // second block
+//  complexOperation.addExecutionBlock {
+//    for i in 1...50{
+//        // do some heavy shit
+//    }
+//    print("block 2 done")
+//  }
+//
+//  // Third block
+//  complexOperation.addExecutionBlock {
+//    for i in 1...5{
+//        // do some heavy shit
+//    }
+//    print("block 3 done")
+//  }
+//
+//  //OperationQueue.main // To do UI work
+//  complexOperationQueue.addOperation(complexOperation)
+
+                // OVERRIDING THE OPERATION CLASS
   
-  complexOperationQueue.maxConcurrentOperationCount = 2 // Num of ops to run concurently
 
-
-  // First block
-  complexOperation.addExecutionBlock {
-    for i in 1...100{
-        // do some heavy shit
+  
+  // Queue
+  let operationQueue = OperationQueue()
+  operationQueue.qualityOfService = .userInitiated
+  
+  class MyOperation: Operation {
+    
+    //TODO: Create main()
+    
+    override func main() {
+        print("Op started")
     }
-    print("block 1 done")
   }
-
-  // second block
-  complexOperation.addExecutionBlock {
-    for i in 1...50{
-        // do some heavy shit
-    }
-    print("block 2 done")
+  
+  let myOp = MyOperation()
+  
+  myOp.completionBlock = {
+    //TODO: print "MyOp Completed"
+    print("op done")
   }
-
-  // Third block
-  complexOperation.addExecutionBlock {
-    for i in 1...5{
-        // do some heavy shit
-    }
-    print("block 3 done")
-  }
-
-  //OperationQueue.main // To do UI work
-  complexOperationQueue.addOperation(complexOperation)
+  
+  operationQueue.addOperation(myOp)
