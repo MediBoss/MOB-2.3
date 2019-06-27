@@ -83,23 +83,67 @@ import Foundation
 //}
 
 
-func downloadMovies(numberOfMovies: Int) {
+//func downloadMovies(numberOfMovies: Int) {
+//
+//    // Create a semaphore
+//    let sm = DispatchSemaphore(value: numberOfMovies)
+//    // Launch 8 tasks
+//
+//    print("Starting downloading \(numberOfMovies) movies at time...")
+//
+//    for i in 1...8{
+//
+//        DispatchQueue.global().async {
+//            sm.wait()
+//            sleep(2)
+//            print("Task \(i) is done")
+//            sm.signal()
+//        }
+//    }
+//}
+//
+//downloadMovies(numberOfMovies: 2)
 
-    // Create a semaphore
-    let sm = DispatchSemaphore(value: numberOfMovies)
-    // Launch 8 tasks
-    
-    print("Starting downloading \(numberOfMovies) movies at time...")
-    
-    for i in 1...8{
-        
-        DispatchQueue.global().async {
-            sm.wait()
-            sleep(2)
-            print("Task \(i) is done")
-            sm.signal()
-        }
+
+var array = [Int]()
+
+// Solution 1 : Semaphores
+var semaphore = DispatchSemaphore(value: 1)
+DispatchQueue.concurrentPerform(iterations: 100) { (index) in
+
+    semaphore.wait()
+    let last = array.last ?? 0
+    array.append(last + 1)
+    print(array)
+    semaphore.signal()
+}
+
+
+// Solution 2 : NSLock
+
+
+let lock = NSLock()
+DispatchQueue.concurrentPerform(iterations: 100) { (index) in
+
+    lock.lock()
+    let last = array.last ?? 0
+    array.append(last + 1)
+    print(array)
+    lock.unlock()
+
+}
+// Solution 3 : Dispatch Barriers
+
+private let concurentQueue = DispatchQueue(label: "concurentArrayAppend", attributes: .concurrent)
+
+
+DispatchQueue.concurrentPerform(iterations: 100) { (index) in
+    concurentQueue.async(flags: .barrier) {
+        let last = array.last ?? 0
+        array.append(last + 1)
+        print(array)
     }
 }
 
-downloadMovies(numberOfMovies: 2)
+
+

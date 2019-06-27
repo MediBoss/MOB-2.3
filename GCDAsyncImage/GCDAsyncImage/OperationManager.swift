@@ -37,7 +37,7 @@ class PendingOperations {
 
 class PhotoDownloadOperation: Operation {
     
-    let photo: Photo
+    var photo: Photo
     
     init(_ photo: Photo) {
         self.photo = photo
@@ -69,7 +69,7 @@ class PhotoDownloadOperation: Operation {
 
 class PhotoFilterOperation: Operation {
     
-    let photo: Photo
+    var photo: Photo
     
     init(_ photo: Photo) {
         self.photo = photo
